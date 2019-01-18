@@ -1,21 +1,32 @@
 <!DOCTYPE html>
 <html lang="ja">
-  <head>
-    <meta http-equiv="content-type"
-        content="text/html; charset=UTF-8">
-    <title><%= title %></title>
-    <link rel='stylesheet' href='/stylesheets/style.css' />
-  </head>
-  <body>
-    <header>
+
+
+<head>
+<meta http-equiv="content-type"
+    content="text/html; charset=UTF-8">
+<title><%= title %></title>
+<link rel='stylesheet' href='/stylesheets/style.css' />
+</head>
+
+
+<body>
+    <head>
         <h1><%= title %></h1>
-    </header>
+    </head>
     <div role="main">
-        <p><%- content %></p>
-        <form method="post" action="/hello/post">
-            <input type="text" name="message">
-            <input type="submit" value="送信">
-        </form> 
+        <% if (content != null) { %>
+            <ol>
+            <% for(var i in content) { %>
+            <% var obj = content[i]; %>
+            <li><a href="<%=obj.link %>">
+                    <%= obj.title %></a></li>
+            </tr>
+            <% } %>
+            </ol>
+        <% } %>
     </div>
-  </body>
+</body>
+
+
 </html>
