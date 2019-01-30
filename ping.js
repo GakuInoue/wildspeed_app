@@ -7,6 +7,7 @@
 //   time - Reply with current time
 'use strict';
 const CronJob = require("cron").CronJob;
+var tetsudocom = require("./tetsudocom.js");
 
 module.exports = (robot) => {
 
@@ -23,7 +24,6 @@ module.exports = (robot) => {
 //    });
 //   });
 
-
   const job = id => new CronJob({
     cronTime: "*/10 * * * * *",
     // onTick: () => res.send('test'),
@@ -33,8 +33,9 @@ module.exports = (robot) => {
     start: false
   })
 
-  robot.respond(/ID$/i, (res) => {
-    res.send(res.message.room);
+  robot.respond(/電車$/i, (res) => {
+    // console.log(tetsudocom.func(callback));
+    tetsudocom.func(function(result){res.send(result[0].name);})
   });
 
   robot.respond(/start$/i, (res) => {
