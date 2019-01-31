@@ -8,6 +8,13 @@
 'use strict';
 const CronJob = require("cron").CronJob;
 var tetsudocom = require("./tetsudocom.js");
+var test = require("./test.js");
+var http = require('http');
+
+const googleMapsClient = require('@google/maps').createClient({
+  key: 'AIzaSyAoMX0o0ClpB7BGPn2XZaF4ilD2blTZJAA',
+  Promise: Promise
+});
 
 module.exports = (robot) => {
 
@@ -26,16 +33,84 @@ module.exports = (robot) => {
 
   const job = id => new CronJob({
     cronTime: "*/10 * * * * *",
-    // onTick: () => res.send('test'),
-    // onTick: () => console.log('test'),
-    // onTick: () => robot.send({room: '_200262169_100663296'},{text: 'test'}),
     onTick: () => robot.send({room: id},{text: 'test'}),
     start: false
   })
 
   robot.respond(/電車$/i, (res) => {
-    // console.log(tetsudocom.func(callback));
-    tetsudocom.func(function(result){res.send(result[0].name);})
+    tetsudocom.func(function(result){
+      var trains = "現在\n"
+      for (var i = 0; i < result.length; i++) {
+        trains += result[i].name
+        trains += "\n"
+      }
+      trains += "が遅延しています"
+      res.send(trains);
+    })
+  });
+
+  robot.respond(/test$/i, (res) => {
+    var url = 'http://express.heartrails.com/api/json?method=getStations';
+    var lat = "35.6989404"
+    var lng = "139.7438649"
+    var latlng = "&x="+lng+"&y="+lat
+    url += latlng
+    var data = [];
+    var result = null;
+    // test.func(function(latlng,result){
+    // test.func(function(result){
+    //   console.log(result.response.station[0].name);
+    //   res.send(result.response.station[0].name);
+    // })
+    http.get(url, function (resul) {
+      resul.on('data', function(chunk) {
+        data.push(chunk);
+      }).on('end', function() {
+     
+        var events   = Buffer.concat(data);
+        result = JSON.parse(events);
+        res.send(result.response.station[0].name);
+     
+        // console.log(result);
+      });
+    });
+  });
+
+  robot.respond(/場所　(.*)$/i, (res) => {
+    googleMapsClient.geocode({address: res.match[1]})
+      .asPromise()
+      .then((response) => {
+        console.log(response.json.results[0].geometry.location);
+        res.send("緯度："+response.json.results[0].geometry.location.lat+"\n経度："+response.json.results[0].geometry.location.lng);
+        var url = 'http://express.heartrails.com/api/json?method=getStations';
+        var lat = response.json.results[0].geometry.location.lat
+        var lng = response.json.results[0].geometry.location.lng
+        var latlng = "&x="+lng+"&y="+lat
+        url += latlng
+        var data = [];
+        var result = null;
+        // test.func(function(latlng,result){
+        // test.func(function(result){
+        //   console.log(result.response.station[0].name);
+        //   res.send(result.response.station[0].name);
+        // })
+        http.get(url, function (resul) {
+          resul.on('data', function(chunk) {
+            data.push(chunk);
+          }).on('end', function() {
+         
+            var events   = Buffer.concat(data);
+            result = JSON.parse(events);
+            res.send("最寄り駅は"+result.response.station[0].name+"駅です");
+         
+            // console.log(result);
+          });
+        });
+      })
+      .catch((err) => {
+        console.log(err);
+  });
+
   });
 
   robot.respond(/start$/i, (res) => {
