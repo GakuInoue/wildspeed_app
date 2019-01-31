@@ -43,7 +43,8 @@ http.get(URL, function(res) {
 	}
 	console.log(`最低気温: ${temp[0]}`);
 	console.log(`最高気温: ${temp[1]}`);
-	}
+	}else if(code == 404){console.log("場所を見つけることができませんでした");}
+	else{console.log(res)};
     
   });
 }).on('error', function(e) {
